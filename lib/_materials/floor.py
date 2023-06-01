@@ -51,16 +51,53 @@ def get_soft_units():
     pass
 
 
-def get_brc_mesh():
+def get_brc_mesh(floor_area_mm):
+    """
+    Get the number of BRC mesh roll needed
+    :param floor_area: The floor area
+    :return: the number of rolls
+    """
+    width = convert_to_mm(2.1)
+    length  = convert_to_mm(48)
+    area_brc_mesh = width * length
+    area_brc_mesh_overlap = 300 * length
+
+    area_brc_mesh_covered = area_brc_mesh - area_brc_mesh_overlap
+    no_brc_mesh_roll = convert_to_mm2(floor_area_mm)/area_brc_mesh_covered
+
+    return  no_brc_mesh_roll
+    #factor in the overlap distance between BRC MESH
+    #standard length is 2.1m wide and 48m long
+
+def get_dpm():
     pass
 
+def convert_to_mm(units):
+    """
+    converts units to mm
+    :param units: units in m
+    :return: units in mm
+    """
+    return  units * 1000
+def convert_to_mm2(units):
+    """
+    convert m2 to mm2
+    :param units:
+    :return:
+    """
+    return  units * 1000 * 1000
 
-if __name__ == "__main__":
-    conc_mix_ratio = (1,2,4)
+def main():
+    conc_mix_ratio = (1, 2, 4)
     volume_of_mix = 1.78
-    cement, soft_agg, coarse_agg = get_coarse_soft_cement_vol(conc_mix_ratio,volume_of_mix)
+    cement, soft_agg, coarse_agg = get_coarse_soft_cement_vol(conc_mix_ratio, volume_of_mix)
 
     print(cement)
 
     bags = get_cement_units(cement)
     print (bags)
+
+
+if __name__ == "__main__":
+    print (get_brc_mesh(9))
+
