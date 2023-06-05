@@ -1,6 +1,6 @@
 
 
-
+from __future__ import division
 
 # Converting units from m to mm for high level accuracy results
 # all units intercepted from the model are
@@ -26,6 +26,7 @@ def convert_area(units):
 
 
 def convert_volume(units):
+    # type: (float) -> float
     """
     Convert volume from m3 to mm3
     :param units:
@@ -70,10 +71,9 @@ def get_coarse_soft_cement_vol(concrete_mixing_ratio,volume):
     coarse_agg_ratio = concrete_mixing_ratio[2]
     concrete_ratio = cement_ratio + soft_agg_ratio + coarse_agg_ratio
 
-    cement_volume = round((cement_ratio/concrete_ratio) * volume, 2)
-    soft_agg_volume = round((soft_agg_ratio/concrete_ratio) * volume, 2)
-    coarse_agg_volume = round((coarse_agg_ratio/concrete_ratio) * volume, 2)
-
+    cement_volume = round((cement_ratio/concrete_ratio) * volume, 3)
+    soft_agg_volume = round((soft_agg_ratio/concrete_ratio) * volume, 3)
+    coarse_agg_volume = round((coarse_agg_ratio/concrete_ratio) * volume, 3)
     return cement_volume, soft_agg_volume, coarse_agg_volume
 
 
@@ -107,11 +107,7 @@ def get_aggregate_tippers(agg_volume, tipper_volume):
 
     no_tippers = agg_volume / tipper_volume
 
-    if no_tippers < 1:
-        less_volume = agg_volume - tipper_volume
-        print ("The quantities needed are less than volume needed by {} m3".format(less_volume))
-    else:
-        return no_tippers
+    return no_tippers
 
 
 def get_brc_mesh(floor_area_mm):
