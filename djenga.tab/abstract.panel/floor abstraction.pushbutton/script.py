@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-
+#! python3
 
 # METADATA
 ################################################################################################################################
@@ -57,6 +56,7 @@ __max_revit_ver__ = 2022
 
 # regular
 
+from tabulate import tabulate
 # Autodesk
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.DB import Transaction, Element, ElementId, FilteredElementCollector
@@ -65,6 +65,7 @@ from Autodesk.Revit.DB import Transaction, Element, ElementId, FilteredElementCo
 
 
 # custom ( Remember to include the csutom lib package to the pythonpath)
+from _materials.floor import *
 
 
 # .NET imports ( I have no idea why I am importing this)
@@ -87,7 +88,8 @@ doc = __revit__.ActiveUIDocument.Document  # obj used to create new instances of
 uidoc = __revit__.ActiveUIDocument  # obj that represent the current active project
 
 
-# custom variables
+# custom variable
+
 
 
 # FUNCTION AND CLASSES
@@ -111,8 +113,11 @@ def get_element_data():
     for floor in floors:
         # Built in parameters
 
+        floor_name = floor.Name
         floor_id = floor.Id
         floor_level_id = floor.LevelId
+        floor_level = doc.GetElement(floor_level_id)
+        floor_level_name = floor_level.Name
         area = floor.get_Parameter(BuiltInParameter.HOST_AREA_COMPUTED).AsValueString()
         thickness = floor.get_Parameter(BuiltInParameter.FLOOR_ATTR_THICKNESS_PARAM).AsValueString()
         volume = floor.get_Parameter(BuiltInParameter.HOST_VOLUME_COMPUTED).AsValueString()
@@ -120,17 +125,47 @@ def get_element_data():
 
         element_data[floor_id] = {"area": area, "thickness": thickness, "volume": volume, "perimeter": perimeter}
 
-        print("***Floor id {}  at Floor Level {}***".format(floor_id, floor_level_id))
+        print("\n***Floor id: {}  at Floor Level: {}***".format(floor_id, floor_level_name))
+
         print("-" * 100)
 
+        print ("Parameters")
+        print("-" * 50)
         print("Area :{}".format(area))
         print("thickness :{}".format(thickness))
         print("volume :{}".format(volume))
         print("perimeter :{}".format(perimeter))
+        print("-" * 50)
 
-        print("-" * 100)
+        print ("\nMaterials")
+        print("-" * 50)
+
+        # display quantities for each floor
+        # cement
+
+        # remove m3 string on volume
+        volume = float(volume[0:5])
+        cement_ratio = (1, 2, 4)
+        cement_vol, soft_agg_vol, coarse_agg_vol = get_coarse_soft_cement_vol(cement_ratio, volume)
+        cement_bags = get_cement_bags_units(cement_vol)
+        tipper_vol = volume_tipper()
+        soft_agg_tipper = get_aggregate_tippers(soft_agg_vol, tipper_vol)
+        coarse_agg_tipper = get_aggregate_tippers(coarse_agg_vol, tipper_vol)
+
+        d = [["cement", cement_vol, "50kg", cement_bags],
+             ["Soft Aggregate (river-sand)", soft_agg_vol, "Tipper", soft_agg_tipper],
+             ["Coarse Aggregate (Ballast)", coarse_agg_vol, "Tipper", coarse_agg_tipper]]
+
+        print (tabulate(d, headers=["Material Name", "Volume", "Quantity units", "Quantity"]))
+
+        print("-" * 50)
 
     return element_data
 
 
-get_element_data()
+
+if __name__ == "__main__":
+    # display areas
+
+    get_element_data()
+
